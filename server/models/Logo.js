@@ -2,7 +2,8 @@ var mongoose = require('mongoose');
 
 var LogoSchema = new mongoose.Schema({
   id: String,
-  text: String,
+  //text: [{Xlocation:Number,Ylocation:Number,textName:String,textColor:String,textSize:Number}],
+  text:String,
   color: String,
   fontSize: { type: Number, min: 2, max: 144 },
   backgroundColor: String,
@@ -14,6 +15,7 @@ var LogoSchema = new mongoose.Schema({
   lastUpdate: { type: Date, default: Date.now },
   logoWidth: { type: Number, min: 0, max: 100 },
   logoHeight:{ type: Number, min: 0, max: 100 },
+  image: [{Xlocation:Number,Ylocation:Number,Url:String,ImageHeight:Number,ImageWidth:Number}]
 });
 
 module.exports = mongoose.model('Logo', LogoSchema);

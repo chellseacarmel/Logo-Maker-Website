@@ -18,7 +18,12 @@ const GET_LOGO = gql`
             padding
             margin
             logoWidth
-            logoHeight
+            logoHeight 
+            image {
+                Xlocation
+                Ylocation
+                Url
+            }      
         }
     }
 `;
@@ -34,9 +39,11 @@ const UPDATE_LOGO = gql`
         $borderWidth: Int!,
         $borderRadius: Int!,
         $padding: Int!,
-        $margin: Int!
-        $logoWidth: Int!
-        $logoHeight: Int!) {
+        $margin: Int!,
+        $logoWidth: Int!,
+        $logoHeight: Int!,
+       $image:[imageInput]!
+       ) {
             updateLogo(
                 id: $id,
                 text: $text,
@@ -49,12 +56,12 @@ const UPDATE_LOGO = gql`
                 padding: $padding,
                 margin: $margin
                 logoWidth: $logoWidth
-                logoHeight: $logoHeight) {
+                logoHeight: $logoHeight
+                image: $image) {
                     lastUpdate
                 }
         }
 `;
-
 class EditLogoScreen extends Component {
 
     constructor(props){
@@ -71,12 +78,31 @@ class EditLogoScreen extends Component {
             renderPadding: "",
             renderMargin: "",
             renderLogoWidth:"",
-            renderLogoHeight:""
-        }
-    }
+            renderLogoHeight:"",
+            renderImage:[]
+             
 
+            
+        }
+        this.handleAddImage=this.handleAddImage.bind(this)
+    }
+    AddImage(){
+       this.setState({renderImage:[...this.state.renderImage,""]})
+    }
+    handleAddImage(e,index){
+        this.state.renderImage[index]=[e.target.value];
+        this.setState({renderImage: this.state.renderImage})
+        console.log(this.state.renderImage)
+    }
+    handleRemoveImage(e,index){
+        this.state.renderImage.splice(index,1)
+        this.setState({renderImage:this.state.renderImage})
+    }
+   
+
+    
     render() {
-        let text, color, fontSize, backgroundColor, borderColor, borderWidth, borderRadius, padding, margin, logoWidth, logoHeight;
+        let text, color, fontSize, backgroundColor, borderColor, borderWidth, borderRadius, padding, margin, logoWidth, logoHeight, image;
         return (
             <Query query={GET_LOGO} variables={{ logoId: this.props.match.params.id }}>
                 {({ loading, error, data }) => {
@@ -113,6 +139,7 @@ class EditLogoScreen extends Component {
                                                 margin.value = "";
                                                 logoWidth.value="";
                                                 logoHeight.value="";
+                                                
                                             }}>
                                                 <div className="form-group col-8">
                                                     <label htmlFor="text">Text:</label>
@@ -180,6 +207,12 @@ class EditLogoScreen extends Component {
                                                         logoHeight = node;
                                                     }} onChange={() => this.setState({renderLogoHeight: parseInt(logoHeight.value)})} placeholder={data.logo.logoHeight} defaultValue={data.logo.logoHeight} />
                                                 </div>
+                                                {this.state.renderImage.map((image,index)=>{return ( <div className="form-group col-8" key={index}>
+                                                    <input type="text" value={image} onChange={(e)=>this.handleAddImage(e,index)} />
+                                                    <button onClick={(e)=> this.handleRemoveImage(e,index)}>Remove</button>
+                                                </div> )})}
+                                                <button type="button" className="btn btn-primary" onClick={(e)=>this.AddImage(e)}>Add Image</button>
+                                            
                                                 <button type="submit" className="btn btn-success">Submit</button>
                                             </form>
                                         
@@ -196,9 +229,11 @@ class EditLogoScreen extends Component {
                                                     padding: (this.state.renderPadding ? this.state.renderPadding : data.logo.padding) + "px",
                                                     margin: (this.state.renderMargin ? this.state.renderMargin : data.logo.margin) + "px",
                                                     width: (this.state.renderLogoWidth ? this.state.renderLogoWidth: data.logo.logoWidth)*5 +"px",
-                                                    height: (this.state.renderLogoHeight ? this.state.renderLogoHeight: data.logo.logoHeight)*4 + "px"
-
+                                                    height: (this.state.renderLogoHeight ? this.state.renderLogoHeight: data.logo.logoHeight)*4 + "px",
+                                        
                                                 }}>{this.state.renderText ? this.state.renderText :  data.logo.text}
+                                                { this.state.renderImage.map(function(image) {
+                                                return (<img src={image} rounded="true" style={{width:100,height:100}} />);})}
                                                 </span>
                                             </div>
                                             {loading && <p>Loading...</p>}
