@@ -4,13 +4,21 @@ import gql from "graphql-tag";
 import { Query, Mutation } from "react-apollo";
 import { clamp } from "../utils/utlity";
 
+
+//renderImage and renderText are initialised as null
+
 const GET_LOGO = gql`
     query logo($logoId: String) {
         logo(id: $logoId) {
             _id
             text
-            color
-            fontSize
+            multipletext{
+                Xlocation
+                Ylocation
+                textName
+                textSize
+                textColor 
+            }        
             backgroundColor
             borderColor
             borderWidth
@@ -23,6 +31,8 @@ const GET_LOGO = gql`
                 Xlocation
                 Ylocation
                 Url
+                ImageHeight
+                ImageWidth
             }      
         }
     }
@@ -32,8 +42,7 @@ const UPDATE_LOGO = gql`
     mutation updateLogo(
         $id: String!,
         $text: String!,
-        $color: String!,
-        $fontSize: Int!,
+        $multipletext:[textInput]!
         $backgroundColor: String!,
         $borderColor: String!,
         $borderWidth: Int!,
@@ -47,8 +56,7 @@ const UPDATE_LOGO = gql`
             updateLogo(
                 id: $id,
                 text: $text,
-                color: $color,
-                fontSize: $fontSize
+                multipletext: $multipletext
                 backgroundColor: $backgroundColor,
                 borderColor: $borderColor,
                 borderWidth: $borderWidth,
@@ -79,36 +87,33 @@ class EditLogoScreen extends Component {
             renderMargin: "",
             renderLogoWidth:"",
             renderLogoHeight:"",
-            renderImage:[]
-             
-
-            
-        }
-        this.handleAddImage=this.handleAddImage.bind(this)
+            renderUrlText:"",
+            renderTextName:"",
+            renderImageWidth:"",
+            renderImageHeight:"",
+            renderImage:[],
+            renderMultipleText:[]
+         }
+        this.AddImage=this.AddImage.bind(this)
+        this.AddText=this.AddText.bind(this)
     }
-    AddImage(){
-       this.setState({renderImage:[...this.state.renderImage,""]})
+    AddImage(e){   
+       this.setState({renderImage:[...this.state.renderImage,{Xlocation:5,Ylocation:5,Url:this.state.renderUrlText,ImageWidth:this.state.renderImageWidth,ImageHeight:this.state.renderImageHeight}]},()=>console.log(this.state.renderImage))    
     }
-    handleAddImage(e,index){
-        this.state.renderImage[index]=[e.target.value];
-        this.setState({renderImage: this.state.renderImage})
-        console.log(this.state.renderImage)
-    }
-    handleRemoveImage(e,index){
-        this.state.renderImage.splice(index,1)
-        this.setState({renderImage:this.state.renderImage})
-    }
-   
-
-    
+    AddText(){
+        this.setState({renderMultipleText:[...this.state.renderMultipleText,{Xlocation:5,Ylocation:5,textName:this.state.renderTextName,textSize:this.state.renderFontSize,textColor:this.state.renderColor}]},()=>console.log(this.state.renderMultipleText))
+     }
+     
     render() {
-        let text, color, fontSize, backgroundColor, borderColor, borderWidth, borderRadius, padding, margin, logoWidth, logoHeight, image;
+        let text, color,fontSize,backgroundColor, borderColor, borderWidth, borderRadius, padding, margin, logoWidth, logoHeight,imageWidth,imageHeight;
+        
         return (
             <Query query={GET_LOGO} variables={{ logoId: this.props.match.params.id }}>
                 {({ loading, error, data }) => {
                     if (loading) return 'Loading...';
                     if (error) return `Error! ${error.message}`;
-
+                    console.log(data.logo.image[data.logo.image.length-1]);
+                    
                     return (
                         <Mutation mutation={UPDATE_LOGO} key={data.logo._id} onCompleted={() => this.props.history.push(`/`)}>
                             {(updateLogo, { loading, error }) => (
@@ -123,14 +128,17 @@ class EditLogoScreen extends Component {
                                         <div className="panel-body row">                                            
                                             <form className="col-6" onSubmit={e => {
                                                 e.preventDefault();
-                                                updateLogo({ variables: { id: data.logo._id, text: text.value, color: color.value, fontSize: parseInt(fontSize.value),
+                                                updateLogo({ variables: { id: data.logo._id, text: text.value, 
                                                                             backgroundColor: backgroundColor.value, borderColor: borderColor.value,
                                                                             borderWidth: parseInt(borderWidth.value), borderRadius: parseInt(borderRadius.value),
                                                                             padding: parseInt(padding.value), margin: parseInt(margin.value) ,logoWidth:parseInt(logoWidth.value) 
-                                                                            , logoHeight: parseInt(logoHeight.value)} });
+                                                                            ,logoHeight: parseInt(logoHeight.value),
+                                                                            image: this.state.renderImage,
+                                                                            multipletext: this.state.renderMultipleText,
+                                                                        } });
                                                 text.value = "";
-                                                color.value = "";
-                                                fontSize.value = "";
+                                                fontSize.value="";
+                                                color.value="";
                                                 backgroundColor.value = "";
                                                 borderColor.value = "";
                                                 borderWidth.value = "";
@@ -139,37 +147,49 @@ class EditLogoScreen extends Component {
                                                 margin.value = "";
                                                 logoWidth.value="";
                                                 logoHeight.value="";
+                                                imageWidth.value="";
+                                                imageHeight.value="";
                                                 
                                             }}>
                                                 <div className="form-group col-8">
-                                                    <label htmlFor="text">Text:</label>
+                                                    <label htmlFor="text">Logo Name:</label>
                                                     <input type="text" className="form-control" name="text" ref={node => {
                                                         text = node;
                                                     }} onChange={() => this.setState({renderText: text.value})} placeholder={data.logo.text} defaultValue={data.logo.text} />
                                                 </div>
-                                                <div className="form-group col-4">
+                                                <div className="form-group col-8">
+                                                    <label htmlFor="Text">Text:</label>
+                                                    <input type="text" className="form-control" name="textName" 
+                                                    onChange={(e) => this.setState({renderTextName: e.target.value})} 
+                                                    defaultValue={data.logo.multipletext.length!=0 ?data.logo.multipletext[data.logo.multipletext.length-1].textName:"Enter Text"} />
+
                                                     <label htmlFor="color">Color:</label>
-                                                    <input type="color" className="form-control" name="color" ref={node => {
+                                                    <input type="color" className="form-control" name="color"  ref={node => {
                                                         color = node;
-                                                    }}onChange={() => this.setState({renderColor: color.value})} placeholder={data.logo.color} defaultValue={data.logo.color} />
+                                                    }} 
+                                                    onChange={() => this.setState({renderColor: color.value})} 
+                                                    defaultValue={data.logo.multipletext.length!=0 ?data.logo.multipletext[data.logo.multipletext.length-1].textColor:""} />
+
+                                                    <label htmlFor="fontSize">Font Size:</label>
+                                                    <input type="number" onInput={()=>{fontSize.value = clamp(fontSize.value, 0, 144);}} className="form-control" name="fontSize"  ref={node => {
+                                                        fontSize = node;
+                                                    }} 
+                                                    onChange={() => this.setState({renderFontSize: parseInt(fontSize.value)})} 
+                                                    defaultValue={data.logo.multipletext.length!=0 ?data.logo.multipletext[data.logo.multipletext.length-1].textSize:50} />
+                                                   
+                                                    <button type="button" className="btn btn-primary" onClick={(e)=>this.AddText(e)}>Add Text</button>
                                                 </div>
-                                                <div className="form-group col-4">
+                                                <div className="form-group col-8">
                                                     <label htmlFor="backgroundColor">Background Color:</label>
                                                     <input type="color" className="form-control" name="backgroundColor" ref={node => {
                                                         backgroundColor = node;
                                                     }} onChange={() => this.setState({renderBackgroundColor: backgroundColor.value})} placeholder={data.logo.backgroundColor} defaultValue={data.logo.backgroundColor} />
                                                 </div>
-                                                <div className="form-group col-4">
+                                                <div className="form-group col-8">
                                                     <label htmlFor="borderColor">Border Color:</label>
                                                     <input type="color" className="form-control" name="borderColor" ref={node => {
                                                         borderColor = node;
                                                     }} onChange={() => this.setState({renderBorderColor: borderColor.value})} placeholder={data.logo.color} defaultValue={data.logo.borderColor} />
-                                                </div>
-                                                <div className="form-group col-8">
-                                                    <label htmlFor="fontSize">Font Size:</label>
-                                                    <input type="text" onInput={()=>{fontSize.value = clamp(fontSize.value, 0, 144);}} className="form-control" name="fontSize" ref={node => {
-                                                        fontSize = node;
-                                                    }} onChange={() => this.setState({renderFontSize: parseInt(fontSize.value)})} placeholder={data.logo.fontSize} defaultValue={data.logo.fontSize} />
                                                 </div>
                                                 <div className="form-group col-8">
                                                     <label htmlFor="borderWidth">Border Width:</label>
@@ -207,23 +227,35 @@ class EditLogoScreen extends Component {
                                                         logoHeight = node;
                                                     }} onChange={() => this.setState({renderLogoHeight: parseInt(logoHeight.value)})} placeholder={data.logo.logoHeight} defaultValue={data.logo.logoHeight} />
                                                 </div>
-                                                {this.state.renderImage.map((image,index)=>{return ( <div className="form-group col-8" key={index}>
-                                                    <input type="text" value={image} onChange={(e)=>this.handleAddImage(e,index)} />
-                                                    <button onClick={(e)=> this.handleRemoveImage(e,index)}>Remove</button>
-                                                </div> )})}
-                                                <button type="button" className="btn btn-primary" onClick={(e)=>this.AddImage(e)}>Add Image</button>
-                                            
+                                                <div className="form-group col-8">
+                                                    <label htmlFor="image">Image:</label>
+                                                    <input type="text" className="form-control" name="Url" 
+                                                    defaultValue={data.logo.image.length!=0?data.logo.image[data.logo.image.length-1].Url:"Enter URL"}
+                                                    onChange={(e)=>this.setState({renderUrlText:e.target.value})} />
+
+                                                    <label htmlFor="imageWidth">Image Width:</label>
+                                                    <input type="number" onInput={()=>{imageWidth.value = clamp(imageWidth.value, 0, 100);}} className="form-control" name="imageWidth" ref={node => {
+                                                        imageWidth = node;
+                                                    }} onChange={() => this.setState({renderImageWidth: parseInt(imageWidth.value)})}
+                                                     defaultValue={data.logo.image.length!=0?data.logo.image[data.logo.image.length-1].ImageWidth:50} />
+                                                     
+                                                    <label htmlFor="imageHeight">Image Height:</label>
+                                                    <input type="number" onInput={()=>{imageHeight.value = clamp(imageHeight.value, 0, 100);}} className="form-control" name="imageHeight" ref={node => {
+                                                        imageHeight = node;
+                                                    }} onChange={() => this.setState({renderImageHeight: parseInt(imageHeight.value)})}
+                                                     defaultValue={data.logo.image.length!=0?data.logo.image[data.logo.image.length-1].ImageHeight:50} />
+                                                    <button type="button" className="btn btn-primary" onClick={(e)=>this.AddImage(e)}>Add Image</button>
+                                                </div>
                                                 <button type="submit" className="btn btn-success">Submit</button>
                                             </form>
-                                        
                                             <div className="col-6">
                                                 <span style={{
                                                     display: "inline-block",
-                                                    color: this.state.renderColor ? this.state.renderColor : data.logo.color,
+                                                    
                                                     backgroundColor: this.state.renderBackgroundColor ? this.state.renderBackgroundColor : data.logo.backgroundColor,
                                                     borderColor: this.state.renderBorderColor ? this.state.renderBorderColor : data.logo.borderColor,
                                                     borderStyle: "solid",
-                                                    fontSize: (this.state.renderFontSize ? this.state.renderFontSize : data.logo.fontSize) + "pt",
+                                                   
                                                     borderWidth: (this.state.renderBorderWidth ? this.state.renderBorderWidth : data.logo.borderWidth) + "px",
                                                     borderRadius: (this.state.renderBorderRadius ? this.state.renderBorderRadius : data.logo.borderRadius) + "px",
                                                     padding: (this.state.renderPadding ? this.state.renderPadding : data.logo.padding) + "px",
@@ -231,9 +263,31 @@ class EditLogoScreen extends Component {
                                                     width: (this.state.renderLogoWidth ? this.state.renderLogoWidth: data.logo.logoWidth)*5 +"px",
                                                     height: (this.state.renderLogoHeight ? this.state.renderLogoHeight: data.logo.logoHeight)*4 + "px",
                                         
-                                                }}>{this.state.renderText ? this.state.renderText :  data.logo.text}
-                                                { this.state.renderImage.map(function(image) {
-                                                return (<img src={image} rounded="true" style={{width:100,height:100}} />);})}
+                                                }}>
+                                                { 
+                                                this.state.renderMultipleText!=0 ?this.state.renderMultipleText.map(function(Text) {
+                                                return (
+                                                <div style={{color:Text.textColor,fontSize:Text.textSize+"pt"}}>
+                                                {Text.textName}
+                                                </div>);})
+                                                :data.logo.multipletext.map(function(Text) {
+                                                    return (
+                                                    <div style={{color:Text.textColor,fontSize:Text.textSize+"pt"}}>
+                                                    {Text.textName}
+                                                    </div>);})}
+                                               
+                                                {this.state.renderImage!=0? this.state.renderImage.map(function(image) {
+                                                return (
+                                                <div className="resizable" >
+                                                <img src={image.Url} rounded="true" style={{width:image.ImageWidth*4,height:image.ImageHeight*4}}/>
+                                                </div>);})
+                                                :data.logo.image.map(function(image){
+                                                return (
+                                                <div className="resizable" >
+                                                 <img src={image.Url} rounded="true" style={{width:image.ImageWidth*4,height:image.ImageHeight*4}}/>
+                                                </div>);   
+                                                })
+                                                }
                                                 </span>
                                             </div>
                                             {loading && <p>Loading...</p>}

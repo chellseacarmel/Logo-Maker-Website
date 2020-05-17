@@ -9,8 +9,13 @@ const GET_LOGO = gql`
         logo(id: $logoId) {
             _id
             text
-            color
-            fontSize
+            multipletext{
+                Xlocation
+                Ylocation
+                textName
+                textSize
+                textColor
+            } 
             backgroundColor
             borderColor
             borderWidth
@@ -20,6 +25,13 @@ const GET_LOGO = gql`
             lastUpdate
             logoWidth
             logoHeight
+            image {
+                Xlocation
+                Ylocation
+                Url
+                ImageHeight
+                ImageWidth
+            }      
         }
     }
 `;
@@ -53,16 +65,16 @@ class ViewLogoScreen extends Component {
                                 <div className="panel-body row">
                                     <div className="col-6">
                                         <dl>
-                                            <dt>Text:</dt>
+                                            <dt>Logo Name:</dt>
                                             <dd>{data.logo.text}</dd>
-                                            <dt>Color:</dt>
-                                            <dd>{data.logo.color}</dd>
+                                            <dt>Logo Text</dt>
+                                            <dd>{data.logo.multipletext.map(function(Text){
+                                                return(Text.textName+"\n")
+                                            })}</dd>
                                             <dt>BackgroundColor:</dt>
                                             <dd>{data.logo.backgroundColor}</dd>
                                             <dt>BorderColor:</dt>
                                             <dd>{data.logo.borderColor}</dd>
-                                            <dt>Font Size:</dt>
-                                            <dd>{data.logo.fontSize}</dd>
                                             <dt>Border Width:</dt>
                                             <dd>{data.logo.borderWidth}</dd>
                                             <dt>Border Radius:</dt>
@@ -76,7 +88,11 @@ class ViewLogoScreen extends Component {
                                             <dt>Logo Width:</dt>
                                             <dd>{data.logo.logoWidth}</dd>
                                             <dt>Logo Height:</dt>
-                                            <dd>{data.logo.logoHeight}</dd>
+                                            <dd>{data.logo.logoHeight}</dd> 
+                                            <dt>Image</dt>
+                                            <dd>{data.logo.image.map(function(Image){
+                                                return(Image.Url+"\n")
+                                            })}</dd>
                                         </dl>
                                         <Mutation mutation={DELETE_LOGO} key={data.logo._id} onCompleted={() => this.props.history.push('/')}>
                                         {(removeLogo, { loading, error }) => (
@@ -97,19 +113,28 @@ class ViewLogoScreen extends Component {
                                     </div>
                                     <div className="col-6">
                                         <span style={{
-                                            display: "inline-block",
-                                            color: data.logo.color,
+                                            display: "inline-block",                                           
                                             backgroundColor: data.logo.backgroundColor,
                                             borderColor: data.logo.borderColor,
-                                            borderStyle: "solid",
-                                            fontSize: data.logo.fontSize + "pt",
+                                            borderStyle: "solid", 
                                             borderWidth: data.logo.borderWidth + "px",
                                             borderRadius: data.logo.borderRadius + "px",
                                             padding: data.logo.padding + "px",
                                             margin: data.logo.margin + "px",
                                             logoWidth: data.logo.logoWidth*5 + "px",
                                             logoHeight: data.logo.logoHeight*4 +"px"
-                                        }}>{data.logo.text}</span>
+                                        }}>
+                                           { data.logo.multipletext.map(function(Text) {
+                                                return (
+                                                <div>
+                                                {Text.textName}
+                                                </div>);})}
+                                        { data.logo.image.map(function(image) {
+                                                return (
+                                                <div>
+                                                <img src={image.Url} rounded="true" style={{width:image.ImageWidth,height:image.ImageHeight}} />
+                                                </div>);})}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

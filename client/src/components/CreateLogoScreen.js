@@ -7,8 +7,7 @@ import { clamp } from '../utils/utlity';
 const ADD_LOGO = gql`
     mutation AddLogo(
         $text: String!,
-        $color: String!,
-        $fontSize: Int!,
+        $multipletext:[textInput]!
         $backgroundColor: String!,
         $borderColor: String!,
         $borderWidth: Int!,
@@ -16,11 +15,10 @@ const ADD_LOGO = gql`
         $padding: Int!,
         $margin: Int!
         $logoWidth:Int!
-        $logoHeight:Int!) {
+        $logoHeight:Int!
+        $image:[imageInput]!) {
         addLogo(
-            text: $text,
-            color: $color,
-            fontSize: $fontSize,
+            text: $text,    
             backgroundColor: $backgroundColor,
             borderColor: $borderColor,
             borderWidth: $borderWidth,
@@ -28,7 +26,9 @@ const ADD_LOGO = gql`
             padding: $padding,
             margin: $margin
             logoWidth: $logoWidth
-            logoHeight: $logoHeight) {
+            logoHeight: $logoHeight
+            image:$image
+            multipletext:$multipletext) {
             _id
         }
     }
@@ -50,12 +50,28 @@ class CreateLogoScreen extends Component {
             renderPadding: "",
             renderMargin: "",
             renderLogoWidth:"",
-            renderLogoHeight:""
+            renderLogoHeight:"",
+            renderUrlText:"",
+            renderImageWidth:"",
+            renderImageHeight:"",
+            renderTextName:"",
+            renderImage:[],
+            renderMultipleText:[]
         }
+        this.AddImage=this.AddImage.bind(this);
+        this.AddText=this.AddText.bind(this)
     }
-
+    AddImage(){
+        this.setState({renderImage:[...this.state.renderImage,{Xlocation:5,Ylocation:5,Url:this.state.renderUrlText,ImageWidth:this.state.renderImageWidth,ImageHeight:this.state.renderImageHeight}]},()=>console.log(this.state.renderImage))    
+    }
+    AddText(){
+        this.setState({renderMultipleText:[...this.state.renderMultipleText,{Xlocation:5,Ylocation:5,textName:this.state.renderTextName,textSize:this.state.renderFontSize,textColor:this.state.renderColor}]},()=>console.log(this.state.renderMultipleText))
+    }  
+     
+     
+    
     render() {
-        let text, color, fontSize, backgroundColor, borderColor, borderWidth, borderRadius, padding, margin, logoWidth,logoHeight;
+        let text, color, fontSize, backgroundColor, borderColor, borderWidth, borderRadius, padding, margin, logoWidth,logoHeight,imageWidth,imageHeight;
         return (
             <Mutation mutation={ADD_LOGO} onCompleted={() => this.props.history.push('/')}>
                 {(addLogo, { loading, error }) => (
@@ -70,11 +86,14 @@ class CreateLogoScreen extends Component {
                             <div className="panel-body row">
                                 <form className="col-6" onSubmit={e => {
                                     e.preventDefault();
-                                    addLogo({ variables: { text: text.value, color: color.value, fontSize: parseInt(fontSize.value),
+                                    addLogo({ variables: { text: text.value, 
                                                             backgroundColor: backgroundColor.value, borderColor: borderColor.value,
                                                             borderWidth: parseInt(borderWidth.value), borderRadius: parseInt(borderRadius.value),
                                                             padding: parseInt(padding.value), margin: parseInt(margin.value),
-                                                            logoWidth: parseInt(logoWidth.value), logoHeight: parseInt(logoHeight.value)} });
+                                                            logoWidth: parseInt(logoWidth.value), logoHeight: parseInt(logoHeight.value),
+                                                            image: this.state.renderImage,
+                                                            multipletext: this.state.renderMultipleText
+                                    }});
                                     text.value = "";
                                     color.value = "";
                                     fontSize.value = "";
@@ -86,19 +105,39 @@ class CreateLogoScreen extends Component {
                                     margin.value = "";
                                     logoWidth.value="";
                                     logoHeight.value="";
+                                    imageWidth.value="";
+                                    imageHeight.value="";
                                 }}>
                                     <div className="form-group col-8">
-                                        <label htmlFor="text">Text:</label>
+                                        <label htmlFor="text">Logo Name:</label>
                                         <input type="text" className="form-control" name="text" ref={node => {
                                             text = node;
                                         }} onChange={() => this.setState({renderText: text.value})} placeholder="Text" />
                                     </div>
-                                    <div className="form-group col-4">
+                                    <div className="form-group col-8">
+                                        <label htmlFor="Text">Text:</label>
+                                        <input type="text" className="form-control" name="textName" 
+                                        onChange={(e) => this.setState({renderTextName: e.target.value})} 
+                                        placeholder="Text"
+                                        />
+
                                         <label htmlFor="color">Color:</label>
-                                        <input type="color" className="form-control" name="color" ref={node => {
-                                            color = node;
-                                        }}onChange={() => this.setState({renderColor: color.value})} placeholder="Color" />
-                                    </div>
+                                        <input type="color" className="form-control" name="color"  ref={node => {
+                                        color = node;
+                                        }} 
+                                        onChange={() => this.setState({renderColor: color.value})} 
+                                        placeholder="Color"
+                                        />
+
+                                        <label htmlFor="fontSize">Font Size:</label>
+                                        <input type="number" onInput={()=>{fontSize.value = clamp(fontSize.value, 0, 144);}} className="form-control" name="fontSize"  ref={node => {
+                                        fontSize = node;
+                                        }} 
+                                        onChange={() => this.setState({renderFontSize: parseInt(fontSize.value)})} 
+                                        placeholder="Font Size"
+                                        />
+                                        <button type="button" className="btn btn-primary" onClick={(e)=>this.AddText(e)}>Add Text</button>
+                                        </div>
                                     <div className="form-group col-4">
                                         <label htmlFor="backgroundColor">Background Color:</label>
                                         <input type="color" className="form-control" name="backgroundColor" ref={node => {
@@ -111,12 +150,7 @@ class CreateLogoScreen extends Component {
                                             borderColor = node;
                                         }} onChange={() => this.setState({renderBorderColor: borderColor.value})} placeholder="Border Color" />
                                     </div>
-                                    <div className="form-group col-8">
-                                        <label htmlFor="fontSize">Font Size:</label>
-                                        <input type="text" onInput={()=>{fontSize.value = clamp(fontSize.value, 0, 144);}} className="form-control" name="fontSize" ref={node => {
-                                            fontSize = node;
-                                        }} onChange={() => this.setState({renderFontSize: parseInt(fontSize.value)})} placeholder="Font Size" />
-                                    </div>
+                                    
                                     <div className="form-group col-8">
                                         <label htmlFor="borderWidth">Border Width:</label>
                                         <input type="number" onInput={()=>{borderWidth.value = clamp(borderWidth.value, 0, 100);}} className="form-control" name="borderWidth" ref={node => {
@@ -153,16 +187,36 @@ class CreateLogoScreen extends Component {
                                             logoHeight = node;
                                         }} onChange={() => this.setState({renderLogoHeight: parseInt(logoHeight.value)})} placeholder="Logo Height" />
                                     </div>
+                                    <div className="form-group col-8">
+                                        <label htmlFor="image">Image:</label>
+                                        <input type="text" className="form-control" name="Url" 
+                                        onChange={(e)=>this.setState({renderUrlText:e.target.value})} 
+                                        placeholder="Image URL"/>
+
+                                        <label htmlFor="imageWidth">Image Width:</label>
+                                        <input type="number" onInput={()=>{imageWidth.value = clamp(imageWidth.value, 0, 100);}} className="form-control" name="imageWidth" ref={node => {
+                                            imageWidth = node;
+                                            }} 
+                                        onChange={() => this.setState({renderImageWidth: parseInt(imageWidth.value)})}
+                                        placeholder="Image Width"/>
+
+                                        <label htmlFor="imageHeight">Image Height:</label>
+                                        <input type="number" onInput={()=>{imageHeight.value = clamp(imageHeight.value, 0, 100);}} className="form-control" name="imageHeight" ref={node => {
+                                            imageHeight = node;
+                                             }} onChange={() => this.setState({renderImageHeight: parseInt(imageHeight.value)})}
+                                        placeholder="Image Height"/>
+
+                                        <button type="button" className="btn btn-primary" onClick={(e)=>this.AddImage(e)}>Add Image</button>
+                                    
+                                    </div>
                                     <button type="submit" className="btn btn-success">Submit</button>
                                 </form>
                                 <div className="col-6">
                                     <span style={{
                                         display: "inline-block",
-                                        color: this.state.renderColor ? this.state.renderColor : "#000000",
                                         backgroundColor: this.state.renderBackgroundColor ? this.state.renderBackgroundColor : "#FFFFFF",
                                         borderColor: this.state.renderBorderColor ? this.state.renderBorderColor : "#000000",
                                         borderStyle: "solid",
-                                        fontSize: (this.state.renderFontSize ? this.state.renderFontSize : 12) + "pt",
                                         borderWidth: (this.state.renderBorderWidth ? this.state.renderBorderWidth : 5) + "px",
                                         borderRadius: (this.state.renderBorderRadius ? this.state.renderBorderRadius : 5) + "px",
                                         padding: (this.state.renderPadding ? this.state.renderPadding : 0) + "px",
@@ -170,7 +224,19 @@ class CreateLogoScreen extends Component {
                                         logoWidth: (this.state.renderLogoWidth ? this.state.renderLogoWidth:0)*5 + "px",
                                         logoHeight: (this.state.renderLogoHeight ? this.state.renderLogoWidth:0)*4 + "px",
 
-                                    }}>{this.state.renderText ? this.state.renderText : "New Logo"}</span>
+                                    }}>
+                                     { this.state.renderMultipleText.length!=0?this.state.renderMultipleText.map(function(Text) {
+                                        return (
+                                        <div style={{color:(Text.textColor?Text.textColor:"#FFFFFF"),fontSize:(Text.textSize?Text.textSize:5)+"pt"}}>
+                                        {Text.textName}
+                                        </div>);})
+                                        :""}
+                                     { this.state.renderImage.length!=0?this.state.renderImage.map(function(image) {
+                                                return (
+                                                <div className="resizable">
+                                                <img src={image.Url} rounded="true" style={{width:image.ImageWidth*4,height:image.ImageHeight*4}} />
+                                                </div>);}):""}
+                                    </span>
                                 </div>
                                 {loading && <p>Loading...</p>}
                                 {error && <p>Error :( Please try again</p>}

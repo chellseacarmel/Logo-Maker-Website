@@ -9,7 +9,7 @@ var GraphQLInt = require('graphql').GraphQLInt;
 var GraphQLDate = require('graphql-date');
 var LogoModel = require('../models/Logo');
 
-var textInputType=new GraphQLInputObjectType({
+var TextInputType=new GraphQLInputObjectType({
     name:'textInput',
     fields: function (){
         return {
@@ -31,7 +31,7 @@ var textInputType=new GraphQLInputObjectType({
         }
     }
 });
-var textType=new GraphQLObjectType({
+var TextType=new GraphQLObjectType({
     name:'text',
     fields: function (){
         return {
@@ -108,12 +108,9 @@ var logoType = new GraphQLObjectType({
             text: {
                 type: GraphQLString
             },
-             color: {
-                type: GraphQLString
-             },
-             fontSize: {
-                 type: GraphQLInt
-             },
+            multipletext:{
+                type: GraphQLList(TextType)
+            },
             backgroundColor: {
                 type: GraphQLString
             },
@@ -223,20 +220,18 @@ var mutation = new GraphQLObjectType({
                 args: {
                     text: {
                         type: new GraphQLNonNull(GraphQLString)
-                        // args:{
-                        //     Xlocation:{type:new GraphQLNonNull(GraphQLInt)},
-                        //     Ylocation:{type:new GraphQLNonNull(GraphQLInt)},
-                        //     textName:{type:new GraphQLNonNull(GraphQLString)},
-                        //     textColor:{type:new GraphQLNonNull(GraphQLString)},
-                        //     textSize:{type:new GraphQLNonNull(GraphQLString)}
-                        //  }      
                     },
-                     color: {
-                        type: new GraphQLNonNull(GraphQLString)
-                     },
-                     fontSize: {
-                         type: new GraphQLNonNull(GraphQLInt)
-                     },
+                    multipletext:{
+                        type: new GraphQLNonNull(new GraphQLList(TextInputType)),
+                          args:{
+                          Xlocation:{type:new GraphQLNonNull(GraphQLInt)},
+                          Ylocation:{type:new GraphQLNonNull(GraphQLInt)},
+                          textName:{type:new GraphQLNonNull(GraphQLString)},
+                          textColor:{type:new GraphQLNonNull(GraphQLString)},
+                          textSize:{type:new GraphQLNonNull(GraphQLString)}
+                       }      
+                    },
+                    
                     backgroundColor: {
                         type: new GraphQLNonNull(GraphQLString)
                     },
@@ -291,21 +286,17 @@ var mutation = new GraphQLObjectType({
                     },
                     text: {
                         type: new GraphQLNonNull(GraphQLString)
-                        // type: new GraphQLList(textInputType),
-                        // args:{
-                        //     Xlocation:{type:new GraphQLNonNull(GraphQLInt)},
-                        //     Ylocation:{type:new GraphQLNonNull(GraphQLInt)},
-                        //     textName:{type:new GraphQLNonNull(GraphQLString)},
-                        //     textColor:{type:new GraphQLNonNull(GraphQLString)},
-                        //     textSize:{type:new GraphQLNonNull(GraphQLString)}     
-                        //  }      
                     },
-                     color: {
-                         type: new GraphQLNonNull(GraphQLString)
-                     },
-                     fontSize: {
-                         type: new GraphQLNonNull(GraphQLInt)
-                     },
+                    multipletext:{
+                        type: new GraphQLNonNull(new GraphQLList(TextInputType)),
+                          args:{
+                          Xlocation:{type:new GraphQLNonNull(GraphQLInt)},
+                          Ylocation:{type:new GraphQLNonNull(GraphQLInt)},
+                          textName:{type:new GraphQLNonNull(GraphQLString)},
+                          textColor:{type:new GraphQLNonNull(GraphQLString)},
+                          textSize:{type:new GraphQLNonNull(GraphQLString)}
+                       }      
+                    },
                     backgroundColor: {
                         type: new GraphQLNonNull(GraphQLString)
                     },
@@ -330,7 +321,7 @@ var mutation = new GraphQLObjectType({
                     logoHeight: {
                         type: new GraphQLNonNull(GraphQLInt)
                     },
-                     image: {
+                    image: {
                          type: new GraphQLNonNull(new GraphQLList(ImageInputType)),
                          args:{
                              Xlocation:{type:new GraphQLNonNull(GraphQLInt)},
@@ -345,11 +336,11 @@ var mutation = new GraphQLObjectType({
                 },
                 resolve(root, params) {
                     return LogoModel.findByIdAndUpdate(params.id,
-                        { text: params.text, color: params.color, fontSize: params.fontSize,/////
+                        { text: params.text,/////
                             backgroundColor : params.backgroundColor, borderColor : params.borderColor,
                             borderWidth: params.borderWidth, borderRadius: params.borderRadius,
                             padding: params.padding, margin: params.margin, lastUpdate: new Date(),logoWidth: params.logoWidth,
-                            logoHeight: params.logoHeight}, function (err) {
+                            logoHeight: params.logoHeight,image:params.image,multipletext:params.multipletext}, function (err) {
                         if (err) return next(err);
                     });
                 }

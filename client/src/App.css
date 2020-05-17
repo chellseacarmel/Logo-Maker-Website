@@ -52,5 +52,10 @@ body {
 .resizable {
   resize: both;   /* Options: horizontal, vertical, both */
   overflow: auto; /* fix for Safari */
-}
 
+}
+.img{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+}
