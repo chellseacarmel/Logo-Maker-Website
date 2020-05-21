@@ -105,6 +105,7 @@ class ViewLogoScreen extends Component {
                                                     <Link to={`/edit/${data.logo._id}`} className="btn btn-success">Edit</Link>&nbsp;
                                                 <button type="submit" className="btn btn-danger">Delete</button>
                                                 </form>
+                                                <button className="btn btn-success" onClick={()=>this.handleExport()}>Export Logo</button>
                                                 {loading && <p>Loading...</p>}
                                                 {error && <p>Error :( Please try again</p>}
                                             </div>
@@ -121,18 +122,18 @@ class ViewLogoScreen extends Component {
                                             borderRadius: data.logo.borderRadius + "px",
                                             padding: data.logo.padding + "px",
                                             margin: data.logo.margin + "px",
-                                            logoWidth: data.logo.logoWidth*5 + "px",
-                                            logoHeight: data.logo.logoHeight*4 +"px"
+                                            width: data.logo.logoWidth*5 + "px",
+                                            height: data.logo.logoHeight*5 +"px"
                                         }}>
-                                           { data.logo.multipletext.map(function(Text) {
+                                        { data.logo.multipletext.map(function(Text) {
                                                 return (
-                                                <div>
+                                                <div style={{color:Text.textColor,fontSize:Text.textSize+"pt"}}>
                                                 {Text.textName}
                                                 </div>);})}
                                         { data.logo.image.map(function(image) {
                                                 return (
                                                 <div>
-                                                <img src={image.Url} rounded="true" style={{width:image.ImageWidth,height:image.ImageHeight}} />
+                                                <img src={image.Url} rounded="true" className="img" style={{width:image.ImageWidth*2,height:image.ImageHeight*2}} />
                                                 </div>);})}
                                         </span>
                                     </div>

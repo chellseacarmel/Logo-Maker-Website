@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import gql from "graphql-tag";
 import { Query, Mutation } from "react-apollo";
 import { clamp } from "../utils/utlity";
-
+import { Rnd } from 'react-rnd';
 
 //renderImage and renderText are initialised as null
 
@@ -70,6 +70,14 @@ const UPDATE_LOGO = gql`
                 }
         }
 `;
+const style = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "solid 1px #ddd",
+    background: "#f0f0f0"
+  };
+  
 class EditLogoScreen extends Component {
 
     constructor(props){
@@ -91,29 +99,32 @@ class EditLogoScreen extends Component {
             renderTextName:"",
             renderImageWidth:"",
             renderImageHeight:"",
+            renderImageXlocation:"",
+            renderImageYlocation:"",
             renderImage:[],
             renderMultipleText:[]
          }
         this.AddImage=this.AddImage.bind(this)
         this.AddText=this.AddText.bind(this)
-    }
-    AddImage(e){   
+    } 
+    AddImage(e){  
        this.setState({renderImage:[...this.state.renderImage,{Xlocation:5,Ylocation:5,Url:this.state.renderUrlText,ImageWidth:this.state.renderImageWidth,ImageHeight:this.state.renderImageHeight}]},()=>console.log(this.state.renderImage))    
     }
     AddText(){
         this.setState({renderMultipleText:[...this.state.renderMultipleText,{Xlocation:5,Ylocation:5,textName:this.state.renderTextName,textSize:this.state.renderFontSize,textColor:this.state.renderColor}]},()=>console.log(this.state.renderMultipleText))
      }
      
+     
     render() {
         let text, color,fontSize,backgroundColor, borderColor, borderWidth, borderRadius, padding, margin, logoWidth, logoHeight,imageWidth,imageHeight;
-        
+
         return (
             <Query query={GET_LOGO} variables={{ logoId: this.props.match.params.id }}>
                 {({ loading, error, data }) => {
+                    
                     if (loading) return 'Loading...';
                     if (error) return `Error! ${error.message}`;
-                    console.log(data.logo.image[data.logo.image.length-1]);
-                    
+
                     return (
                         <Mutation mutation={UPDATE_LOGO} key={data.logo._id} onCompleted={() => this.props.history.push(`/`)}>
                             {(updateLogo, { loading, error }) => (
@@ -238,7 +249,7 @@ class EditLogoScreen extends Component {
                                                         imageWidth = node;
                                                     }} onChange={() => this.setState({renderImageWidth: parseInt(imageWidth.value)})}
                                                      defaultValue={data.logo.image.length!=0?data.logo.image[data.logo.image.length-1].ImageWidth:50} />
-                                                     
+                                                    
                                                     <label htmlFor="imageHeight">Image Height:</label>
                                                     <input type="number" onInput={()=>{imageHeight.value = clamp(imageHeight.value, 0, 100);}} className="form-control" name="imageHeight" ref={node => {
                                                         imageHeight = node;
@@ -248,48 +259,84 @@ class EditLogoScreen extends Component {
                                                 </div>
                                                 <button type="submit" className="btn btn-success">Submit</button>
                                             </form>
+                                               
                                             <div className="col-6">
                                                 <span style={{
-                                                    display: "inline-block",
-                                                    
+                                                    display: "inline-block",                                                  
                                                     backgroundColor: this.state.renderBackgroundColor ? this.state.renderBackgroundColor : data.logo.backgroundColor,
                                                     borderColor: this.state.renderBorderColor ? this.state.renderBorderColor : data.logo.borderColor,
                                                     borderStyle: "solid",
-                                                   
                                                     borderWidth: (this.state.renderBorderWidth ? this.state.renderBorderWidth : data.logo.borderWidth) + "px",
                                                     borderRadius: (this.state.renderBorderRadius ? this.state.renderBorderRadius : data.logo.borderRadius) + "px",
                                                     padding: (this.state.renderPadding ? this.state.renderPadding : data.logo.padding) + "px",
                                                     margin: (this.state.renderMargin ? this.state.renderMargin : data.logo.margin) + "px",
                                                     width: (this.state.renderLogoWidth ? this.state.renderLogoWidth: data.logo.logoWidth)*5 +"px",
-                                                    height: (this.state.renderLogoHeight ? this.state.renderLogoHeight: data.logo.logoHeight)*4 + "px",
+                                                    height: (this.state.renderLogoHeight ? this.state.renderLogoHeight: data.logo.logoHeight)*5 + "px",
                                         
                                                 }}>
-                                                { 
-                                                this.state.renderMultipleText!=0 ?this.state.renderMultipleText.map(function(Text) {
+                                               
+                                                { this.state.renderMultipleText!=0 ?this.state.renderMultipleText.map((Text)=> {
                                                 return (
+                                                    <Rnd  
+                                                    bounds="parent"
+                                                    style={{style}}
+                                                    default={{
+                                                        x: 0,
+                                                        y: 0,
+                                                      }}
+                                                    >
                                                 <div style={{color:Text.textColor,fontSize:Text.textSize+"pt"}}>
                                                 {Text.textName}
-                                                </div>);})
-                                                :data.logo.multipletext.map(function(Text) {
+                                                </div>
+                                                </Rnd>);})
+                                                :data.logo.multipletext.map((Text)=> {
                                                     return (
+                                                        <Rnd  
+                                                        bounds="parent"
+                                                        style={{style}}
+                                                        default={{
+                                                            x: 0,
+                                                            y: 0,
+                                                          }}
+                                                        >
                                                     <div style={{color:Text.textColor,fontSize:Text.textSize+"pt"}}>
                                                     {Text.textName}
-                                                    </div>);})}
-                                               
-                                                {this.state.renderImage!=0? this.state.renderImage.map(function(image) {
+                                                    </div>
+                                                    </Rnd>);})}      
+                                                {
+                                                this.state.renderImage!=0? this.state.renderImage.map((image)=> {
+                                                return (   
+                                                <Rnd  
+                                                bounds="parent"
+                                                style={{style}}
+                                                default={{
+                                                    x: 0,
+                                                    y: 0,
+                                                  }}
+                                                
+                                                >                                                                                  
+                                                <img src={image.Url}rounded="true" className="img"style={{width:image.ImageWidth*2,height:image.ImageHeight*2}}/>
+                                                </Rnd>                            
+                                                );})                                                
+                                                :data.logo.image.map((image)=>{
                                                 return (
-                                                <div className="resizable" >
-                                                <img src={image.Url} rounded="true" style={{width:image.ImageWidth*4,height:image.ImageHeight*4}}/>
-                                                </div>);})
-                                                :data.logo.image.map(function(image){
-                                                return (
-                                                <div className="resizable" >
-                                                 <img src={image.Url} rounded="true" style={{width:image.ImageWidth*4,height:image.ImageHeight*4}}/>
-                                                </div>);   
+                                                <Rnd  
+                                                    bounds="parent"
+                                                    default={{
+                                                        x: 0,
+                                                        y: 0,
+                                                      }}
+                                                    
+                                                    >  
+                                                 <div>
+                                                 <img src={image.Url} rounded="true" className="img" style={{width:image.ImageWidth*2,height:image.ImageHeight*2}}/>
+                                                 </div>
+                                                </Rnd>);   
                                                 })
                                                 }
                                                 </span>
                                             </div>
+                                           
                                             {loading && <p>Loading...</p>}
                                             {error && <p>Error :( Please try again</p>}
                                         </div>

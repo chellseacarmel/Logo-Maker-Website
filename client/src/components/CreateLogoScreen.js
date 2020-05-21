@@ -3,6 +3,7 @@ import gql from "graphql-tag";
 import { Mutation } from "react-apollo";
 import { Link } from 'react-router-dom';
 import { clamp } from '../utils/utlity';
+import{Rnd} from 'react-rnd';
 
 const ADD_LOGO = gql`
     mutation AddLogo(
@@ -33,7 +34,14 @@ const ADD_LOGO = gql`
         }
     }
 `;
-
+const style = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "solid 1px #ddd",
+    background: "#f0f0f0"
+  };
+  
 class CreateLogoScreen extends Component {
 
     constructor(props){
@@ -222,20 +230,38 @@ class CreateLogoScreen extends Component {
                                         padding: (this.state.renderPadding ? this.state.renderPadding : 0) + "px",
                                         margin: (this.state.renderMargin ? this.state.renderMargin : 0) + "px",
                                         logoWidth: (this.state.renderLogoWidth ? this.state.renderLogoWidth:0)*5 + "px",
-                                        logoHeight: (this.state.renderLogoHeight ? this.state.renderLogoWidth:0)*4 + "px",
+                                        logoHeight: (this.state.renderLogoHeight ? this.state.renderLogoWidth:0)*5 + "px",
 
                                     }}>
-                                     { this.state.renderMultipleText.length!=0?this.state.renderMultipleText.map(function(Text) {
+                                     {this.state.renderMultipleText.length!=0?this.state.renderMultipleText.map(function(Text) {
                                         return (
+                                            <Rnd  
+                                            bounds="parent"
+                                            style={{style}}
+                                            default={{
+                                                x: 0,
+                                                y: 0,
+                                              }}
+                                            >
                                         <div style={{color:(Text.textColor?Text.textColor:"#FFFFFF"),fontSize:(Text.textSize?Text.textSize:5)+"pt"}}>
                                         {Text.textName}
-                                        </div>);})
+                                        </div>
+                                        </Rnd>);})
                                         :""}
                                      { this.state.renderImage.length!=0?this.state.renderImage.map(function(image) {
                                                 return (
+                                                    <Rnd  
+                                                    bounds="parent"
+                                                    style={{style}}
+                                                    default={{
+                                                        x: 0,
+                                                        y: 0,
+                                                      }}
+                                                    >
                                                 <div className="resizable">
-                                                <img src={image.Url} rounded="true" style={{width:image.ImageWidth*4,height:image.ImageHeight*4}} />
-                                                </div>);}):""}
+                                                <img src={image.Url} rounded="true" className="img"style={{width:image.ImageWidth*2,height:image.ImageHeight*2}} />
+                                                </div>
+                                                </Rnd>);}):""}
                                     </span>
                                 </div>
                                 {loading && <p>Loading...</p>}
